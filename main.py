@@ -3,6 +3,9 @@
 # Author: Raghu Ganapathy
 # E-mail: raghu.1999@gmail.com
 
+# UX Edit: Vishal Verma
+# E-mail: vecbhopal@gmail.com
+
 import requests
 import pygame
 import json
@@ -12,6 +15,8 @@ from requests.models import to_native_string
 
 from requests.sessions import session
 
+from os import system, name
+
 BLR = '294'
 BangaloreRural = '276'
 BangaloreUrban = '265'
@@ -19,7 +24,6 @@ BangaloreUrban = '265'
 pygame.init()
 pygame.mixer.init()
 sounda = pygame.mixer.Sound("beep-01a.wav")
-
 
 headers = {
     ':authority': 'cdn-api.co-vin.in',
@@ -39,6 +43,16 @@ headers = {
     'sec-fetch-site': 'cross-site',
     'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
 }
+
+def clear():
+  
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+  
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
 
 
 def audio_alert():
@@ -74,16 +88,13 @@ def hdl_request(place, week_no):
         'sec-fetch-site': 'cross-site',
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
     })
-    print(response)
     #response = requests.get('https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=395&date=02-05-2021')
-    print('-------------------------------------------')
-    print('Checking for week starting: ', hdl_time(week_no))
-    print('-------------------------------------------')
+    print(hdl_time(week_no),"\t\t",end=""),
     data = response.json()
 
     no_of_centers = len(data["centers"])
-    print("Total no. of centers providing vaccinations: ", no_of_centers)
-
+    print(str(no_of_centers),"\t\t",end=""),
+    #print('\t'),
     ref_id = []
     ref_id_age = []
 
@@ -97,38 +108,45 @@ def hdl_request(place, week_no):
             ref_id.append(i)
 
     no_vacc_centers = len(ref_id)
-    print('No. of centers with open slots: ', no_vacc_centers)
+    print(str(no_vacc_centers),"\t\t",end=""),
     for i in ref_id:
         age = data["centers"][i]["sessions"][0]["min_age_limit"]
         if age == 18:
             ref_id_age.append(i)
     no_vacc_centers_18yo = len(ref_id_age)
-    print('No. of centers with open slots for age 18+: ', no_vacc_centers_18yo)
+    print(str(no_vacc_centers_18yo))
     if no_vacc_centers_18yo > 0:
         for i in ref_id_age:
-            audio_alert()
-            print(data["centers"][i])
+                audio_alert()
+                print(data["centers"][i])
 
 
 if __name__ == "__main__":
     no_of_weeks = 10
     while True:
+        clear()
         print('***********************************************')
         print('Checking for free slots in BLR-BBMP at', datetime.datetime.now())
-        print('***********************************************')
+        print('-------------------------------------------')
+        print("Week starting\tTotal Centers\tAll Centers\t18+ Centers")
         for week in range(0, no_of_weeks):
             hdl_request(BLR, week)
 
+        print()
         print('***********************************************')
         print('Checking for free slots in BLR-URBAN at', datetime.datetime.now())
-        print('***********************************************')
+        print('-------------------------------------------')
+        print("Week starting\tTotal Centers\tAll Centers\t18+ Centers")
         for week in range(0, no_of_weeks):
             hdl_request(BangaloreUrban, week)
 
+        print()
         print('***********************************************')
         print('Checking for free slots in BLR-RURAL at', datetime.datetime.now())
-        print('***********************************************')
+        print('-------------------------------------------')
+        print("Week starting\tTotal Centers\tAll Centers\t18+ Centers")
         for week in range(0, no_of_weeks):
             hdl_request(BangaloreRural, week)
 
         time.sleep(30)
+
